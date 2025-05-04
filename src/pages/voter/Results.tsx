@@ -55,6 +55,7 @@ export default function Results() {
       if (!pollData || !pollData.poll) {
         throw new Error("Invalid poll data received");
       }
+
       setPoll(pollData.poll);
 
       // Fetch vote status
@@ -62,15 +63,15 @@ export default function Results() {
       if (!status) {
         throw new Error("Invalid vote status received");
       }
-      setVoteStatus(status);
+      setVoteStatus(status.status);
 
       // Only fetch results if the user has voted
-      if (status.hasVoted) {
+      if (status.status.hasVoted) {
         const results = await pollService.getPollResults(id);
-        if (!results || !Array.isArray(results.options)) {
+        if (!results || !results || !results.results) {
           throw new Error("Invalid poll results format");
         }
-        setPollResult(results);
+        setPollResult(results.results);
       }
     } catch (error) {
       console.error("Error fetching poll data:", error);
@@ -84,11 +85,11 @@ export default function Results() {
     fetchData();
 
     // Set up polling for real-time updates
-    const intervalId = setInterval(fetchData, 10000); // Poll every 10 seconds
+    const intervalId = setInterval(fetchData, 20000); // Poll every 10 seconds
 
     return () => clearInterval(intervalId);
   }, [id]);
-
+  console.log(pollResult, "pollResult");
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-12">
@@ -149,13 +150,22 @@ export default function Results() {
 
   // Prepare data for pie chart
   const chartData = pollResult.options.map((option) => ({
-    name: option.text,
-    value: option.voteCount,
+    name: option.option,
+    value: option.votes,
+  }));
+
+  // Calculate percentages for each option
+  const optionsWithPercentage = pollResult.options.map((option) => ({
+    ...option,
+    percentage:
+      pollResult.totalVotes > 0
+        ? (option.votes / pollResult.totalVotes) * 100
+        : 0,
   }));
 
   // Find the option the user voted for
   const userVote = pollResult.options.find(
-    (option) => option.id === voteStatus?.optionId
+    (option) => option.optionId === voteStatus?.optionId
   );
 
   return (
@@ -220,7 +230,7 @@ export default function Results() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="p-4 bg-primary/10 rounded-lg">
-              <p className="font-medium">{userVote?.text}</p>
+              <p className="font-medium">{userVote?.option}</p>
             </div>
 
             <div>
@@ -247,8 +257,8 @@ export default function Results() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {pollResult.options.map((option, index) => (
-              <div key={option.id} className="space-y-2">
+            {optionsWithPercentage.map((option, index) => (
+              <div key={option.optionId} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div
@@ -257,21 +267,26 @@ export default function Results() {
                     />
                     <span
                       className={`font-medium ${
-                        option.id === voteStatus?.optionId ? "text-primary" : ""
+                        option.optionId === voteStatus?.optionId
+                          ? "text-primary"
+                          : ""
                       }`}
                     >
-                      {option.text}
-                      {option.id === voteStatus?.optionId && " (Your vote)"}
+                      {option.option}
+                      {option.optionId === voteStatus?.optionId &&
+                        " (Your vote)"}
                     </span>
                   </div>
                   <span className="text-muted-foreground">
-                    {option.voteCount} votes ({option.percentage.toFixed(1)}%)
+                    {option.votes} votes ({option.percentage.toFixed(1)}%)
                   </span>
                 </div>
                 <Progress
                   value={option.percentage}
                   className={`h-2 ${
-                    option.id === voteStatus?.optionId ? "bg-primary/20" : ""
+                    option.optionId === voteStatus?.optionId
+                      ? "bg-primary/20"
+                      : ""
                   }`}
                 />
               </div>

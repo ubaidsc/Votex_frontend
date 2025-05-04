@@ -34,10 +34,11 @@ export default function Polls() {
 
       // Fetch vote status for each poll
       const statuses: Record<string, VoteStatus> = {};
-      for (const poll of data) {
+      for (const poll of data.polls) {
         try {
           const status = await pollService.getVoteStatus(poll.id);
-          statuses[poll.id] = status;
+          console.log(status.status);
+          statuses[poll.id] = status.status;
         } catch (error) {
           console.error(
             `Error fetching vote status for poll ${poll.id}:`,
@@ -49,7 +50,7 @@ export default function Polls() {
       setVoteStatuses(statuses);
     } catch (error) {
       console.error("Error fetching polls:", error);
-      toast.error("Failed to load available polls");
+      // toast.error("Failed to load available polls");
     } finally {
       setIsLoading(false);
     }

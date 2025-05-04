@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '@/services/authService';
-import { User, AuthState, UserRole } from '@/types';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { authService } from "@/services/authService";
+import { User, AuthState, UserRole } from "@/types";
+import { toast } from "sonner";
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string, role: UserRole) => Promise<void>;
@@ -15,18 +15,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
-    token: localStorage.getItem('token'),
+    token: localStorage.getItem("token"),
     isAuthenticated: false,
     isLoading: true,
   });
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('token');
-      const userStr = localStorage.getItem('user');
-      
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
+
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr) as User;
@@ -37,50 +37,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isLoading: false,
           });
         } catch (error) {
-          console.error('Failed to parse user data:', error);
-          setState({ user: null, token: null, isAuthenticated: false, isLoading: false });
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          console.error("Failed to parse user data:", error);
+          setState({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
         }
       } else {
-        setState({ user: null, token: null, isAuthenticated: false, isLoading: false });
+        setState({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
       }
     };
 
     initAuth();
   }, []);
 
-  const login = async (identifier: string, password: string, role: UserRole) => {
+  const login = async (
+    identifier: string,
+    password: string,
+    role: UserRole
+  ) => {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
-      
+
       let response;
-      
-      if (role === 'organizer') {
+
+      if (role === "organizer") {
         response = await authService.organizerLogin(identifier, password);
       } else {
         response = await authService.voterLogin(identifier, password);
       }
-      
+
       const { token, user } = response;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
       setState({
         user,
         token,
         isAuthenticated: true,
         isLoading: false,
       });
-      
+
       toast.success(`Welcome back, ${user.name}!`);
-      
+
       // Redirect based on role
-      if (user.role === 'organizer') {
-        navigate('/organizer/voters');
+      if (user.role === "organizer") {
+        navigate("/organizer/voters");
       } else {
-        navigate('/voter/polls');
+        navigate("/voter/polls");
       }
     } catch (error) {
       setState((prev) => ({ ...prev, isLoading: false }));
@@ -92,19 +106,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
       await authService.logout();
-      toast.success('Logged out successfully');
+      toast.success("Logged out successfully");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setState({
         user: null,
         token: null,
         isAuthenticated: false,
         isLoading: false,
       });
-      navigate('/login/organizer');
+      navigate("/login/organizer");
     }
   };
 
@@ -112,8 +126,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
       await authService.register(name, email, password);
-      toast.success('Registration successful! You can now log in.');
-      navigate('/login/organizer');
+      toast.success("Registration successful! You can now log in.");
+      setState((prev) => ({ ...prev, isLoading: false }));
+      navigate("/login/organizer");
     } catch (error) {
       setState((prev) => ({ ...prev, isLoading: false }));
       // Toast error is handled by the API interceptor
@@ -137,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
