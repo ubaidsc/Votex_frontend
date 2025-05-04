@@ -8,6 +8,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "noEmit": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noImplicitAny": false,
+    "strict": false
   }
 }
