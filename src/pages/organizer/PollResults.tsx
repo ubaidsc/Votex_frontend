@@ -66,7 +66,7 @@ export default function PollResults() {
     fetchResults();
 
     // Set up polling for real-time updates
-    const intervalId = setInterval(fetchResults, 10000); // Poll every 10 seconds
+    const intervalId = setInterval(fetchResults, 20000); // Poll every 10 seconds
 
     return () => clearInterval(intervalId);
   }, [id]);
@@ -107,6 +107,14 @@ export default function PollResults() {
   const chartData = pollResult.options.map((option) => ({
     name: option.option,
     value: option.votes,
+  }));
+  // Calculate percentages for each option
+  const optionsWithPercentage = pollResult.options.map((option) => ({
+    ...option,
+    percentage:
+      pollResult.totalVotes > 0
+        ? (option.votes / pollResult.totalVotes) * 100
+        : 0,
   }));
 
   return (
@@ -210,8 +218,8 @@ export default function PollResults() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {pollResult.options.map((option, index) => (
-              <div key={option.id} className="space-y-2">
+            {optionsWithPercentage.map((option, index) => (
+              <div key={option.optionId} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div
@@ -221,7 +229,7 @@ export default function PollResults() {
                     <span className="font-medium">{option.option}</span>
                   </div>
                   <span className="text-muted-foreground">
-                    {option.votes} votes ({option.percentage?.toFixed(1)}%)
+                    {option.votes} votes ({option.percentage.toFixed(1)}%)
                   </span>
                 </div>
                 <Progress value={option.percentage} className="h-2" />

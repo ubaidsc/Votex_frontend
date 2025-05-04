@@ -1,20 +1,15 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Vote, BarChart3 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import { Vote, BarChart3 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const sidebarNavItems = [
   {
-    title: 'Active Polls',
-    href: '/voter/polls',
+    title: "Active Polls",
+    href: "/voter/polls",
     icon: Vote,
-  },
-  {
-    title: 'Results',
-    href: '/voter/results',
-    icon: BarChart3,
   },
 ];
 
@@ -39,8 +34,10 @@ export function VoterSidebar() {
                 to={item.href}
                 className={({ isActive }) =>
                   cn(
-                    'group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-all',
-                    isActive ? 'bg-accent text-accent-foreground' : 'transparent'
+                    "group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-all",
+                    isActive
+                      ? "bg-accent text-accent-foreground"
+                      : "transparent"
                   )
                 }
                 end
